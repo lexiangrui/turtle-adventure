@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
+    <title>Turtle Adventure - 乌龟大冒险</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #1a1a2e;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        overflow: hidden;
+      }
+      h1 {
+        color: #e0e0e0;
+        font-size: 28px;
+        margin: 10px 0 5px 0;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        letter-spacing: 2px;
+      }
+      .controls-hint {
+        color: #aaa;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .controls-hint kbd {
+        background: #333;
+        border: 1px solid #555;
+        border-radius: 3px;
+        padding: 2px 6px;
+        font-size: 12px;
+        color: #ddd;
+      }
+      #tuanjie-container {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(0, 200, 150, 0.15);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🐢 Turtle Adventure</h1>
+    <div class="controls-hint">
+      <kbd>←</kbd> <kbd>→</kbd> 移动 &nbsp;|&nbsp;
+      <kbd>Space</kbd> 跳跃 / 二段跳 / 蹬墙跳
+    </div>
+
+    <div id="tuanjie-container" class="tuanjie-desktop">
+      <canvas id="tuanjie-canvas" width=960 height=600 tabindex="-1"></canvas>
+      <div id="tuanjie-loading-bar">
+        <div id="tuanjie-logo"></div>
+        <div id="tuanjie-progress-bar-empty">
+          <div id="tuanjie-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="tuanjie-warning"> </div>
+      <div id="tuanjie-footer">
+        <div id="tuanjie-webgl-logo"></div>
+        <div id="tuanjie-fullscreen-button"></div>
+        <div id="tuanjie-build-title">Turtle Adventure</div>
+      </div>
+    </div>
+
+    <script>
+      var container = document.querySelector("#tuanjie-container");
+      var canvas = document.querySelector("#tuanjie-canvas");
+      var loadingBar = document.querySelector("#tuanjie-loading-bar");
+      var progressBarFull = document.querySelector("#tuanjie-progress-bar-full");
+      var fullscreenButton = document.querySelector("#tuanjie-fullscreen-button");
+      var warningBanner = document.querySelector("#tuanjie-warning");
+
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebGLBuild.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/WebGLBuild.data.br",
+        frameworkUrl: buildUrl + "/WebGLBuild.framework.js.br",
+        codeUrl: buildUrl + "/WebGLBuild.wasm.br",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Turtle Adventure",
+        productName: "Turtle Adventure",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        container.className = "tuanjie-mobile";
+        canvas.className = "tuanjie-mobile";
+      } else {
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
+      }
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createTuanjieInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((tuanjieInstance) => {
+          loadingBar.style.display = "none";
+          fullscreenButton.onclick = () => {
+            tuanjieInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
